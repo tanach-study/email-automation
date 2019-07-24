@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/tanach-study/email-automation/issues"
   },
-  "homepage": "https://github.com/tanach-study/email-automation#readme"
+  "homepage": "https://github.com/tanach-study/email-automation#readme",
+  "dependencies": {
+    "handlebars": "^4.1.2"
+  }
 }
