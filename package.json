@@ -1,0 +1,22 @@
+{
+  "name": "email-automation",
+  "version": "1.0.0",
+  "description": "This repo holds a service that pulls data from the API and generates HTML emails from templates.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tanach-study/email-automation.git"
+  },
+  "author": "Joey Pinhas, Ari Mendelow, Perry Raskin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tanach-study/email-automation/issues"
+  },
+  "homepage": "https://github.com/tanach-study/email-automation#readme",
+  "dependencies": {
+    "handlebars": "^4.1.2"
+  }
+}
