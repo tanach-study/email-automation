@@ -1,5 +1,8 @@
+#! /usr/bin/env node
+
 const handlebars = require('handlebars');
-const fs = require('fs')
+const fs = require('fs');
+const { ArgumentParser } = require('argparse');
 
 /*
   renderTemplateFromData is designed to take in an email template, some data
@@ -49,6 +52,38 @@ function run(context) {
   // TODO: render the template and return it
 }
 
-function main() {
+function cli() {
+  const p = createArgsParser();
+  const args = p.parseArgs();
+  const { program: programArg } = args;
+  const context = {
+    program: programArg,
+  }
+  return run(context);
+}
 
+function createArgsParser() {
+  const parser = new ArgumentParser({
+    version: '1.0.0',
+    addHelp: true,
+    description: 'Generate and schedule email campaigns for all Tanach Study programs'
+  });
+  parser.addArgument(
+    ['-p', '--program'],
+    {
+      help: 'select which program to run with',
+      action: 'store',
+      dest: 'program',
+      required: true,
+    }
+  );
+  return parser;
+}
+
+if (!module.parent) {
+  cli();
+}
+
+module.exports = {
+  generateEmail: main,
 }
