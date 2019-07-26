@@ -52,14 +52,23 @@ function run(context) {
   // TODO: render the template and return it
 }
 
-function cli() {
-  const p = createArgsParser();
-  const args = p.parseArgs();
-  const { program: programArg } = args;
-  const context = {
-    program: programArg,
+function getProgramPathFromProgram(program) {
+  let path = '';
+  switch (program) {
+    case 'tanach':
+    case 'nach':
+      path = 'tanach-study';
+      break;
+    case 'mishna':
+      path = 'mishna-study';
+      break;
+    case 'parasha':
+      path = 'parasha-study';
+      break;
+    default:
+      path = '';
   }
-  return run(context);
+  return path;
 }
 
 function createArgsParser() {
@@ -78,6 +87,24 @@ function createArgsParser() {
     }
   );
   return parser;
+}
+
+function cli() {
+  const p = createArgsParser();
+  const args = p.parseArgs();
+
+  const { program: programArg } = args;
+  const normalizedProgram = programArg.toLowerCase();
+
+  const context = {
+    program: normalizedProgram,
+    programPath: getProgramPathFromProgram(normalizedProgram),
+  };
+  return run(context);
+}
+
+function main() {
+  
 }
 
 if (!module.parent) {
