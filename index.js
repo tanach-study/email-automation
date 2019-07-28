@@ -69,15 +69,20 @@ function run(context) {
   const templateFilePath = getTemplateFilePathFromProgram(program);
 
   promises.push(getDataFromFileAsync(templateFilePath));
-  promises.push(getDataByProgramByDateAsync(program, date));
+  promises.push(getDataByProgramByDateAsync(programPath, date.toISOString()));
 
   Promise.all(promises)
   .then((data) => {
     const template = data[0];
     const apiResponse = data[1];
-
-    const templateData = transformAPIDataToTemplateData(apiResponse);
-    const rendered = renderTemplateFromData(template, templateData);
+    apiResponse.json()
+    .then((apiData) => {
+      const templateData = transformAPIDataToTemplateData(apiData);
+      const rendered = renderTemplateFromData(template, templateData);
+    })
+    .catch((jsonParseErr) => {
+      throw jsonParseErr;
+    });
   })
   .catch((err) => {
     throw err;
