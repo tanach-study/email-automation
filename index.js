@@ -50,6 +50,9 @@ function run(context) {
   // TODO: get the date on which we wish to run this on from context
   // TODO: get the data for the program at the given date from the TS api
   // TODO: render the template and return it
+  const { program, programPath } = context || {};
+
+
 }
 
 function getProgramPathFromProgram(program) {
@@ -104,6 +107,9 @@ function cli() {
 }
 
 function main(programArg) {
+  if (!programArg) {
+    throw new Error('must specify program argument');
+  }
   const normalizedProgram = programArg.toLowerCase();
 
   const context = {
