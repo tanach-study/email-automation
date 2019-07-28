@@ -62,9 +62,6 @@ function getTemplateFilePathFromProgram(program) {
   context object.
 */
 function run(context) {
-  // TODO: get the program's template from its file
-  // TODO: get the date on which we wish to run this on from context
-  // TODO: get the data for the program at the given date from the TS api
   // TODO: render the template and return it
   const { program, programPath, date } = context || {};
   const promises = [];
@@ -73,9 +70,14 @@ function run(context) {
 
   promises.push(getDataFromFileAsync(templateFilePath));
   promises.push(getDataByProgramByDateAsync(program, date));
-  promises.all()
+
+  Promise.all(promises)
   .then((data) => {
-    // TODO: use the data
+    const template = data[0];
+    const apiResponse = data[1];
+
+    const templateData = transformAPIDataToTemplateData(apiResponse);
+    const rendered = renderTemplateFromData(template, templateData);
   })
   .catch((err) => {
     throw err;
