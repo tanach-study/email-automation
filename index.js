@@ -38,21 +38,44 @@ function transformAPIDataToTemplateData(apiData) {
   // TODO: pull out values from the response object to pass to the template
 }
 
-
+function getTemplateFilePathFromProgram(program) {
+  let templatePath = '';
+  switch (program) {
+    case 'tanach':
+    case 'nach':
+      templatePath = './templates/tanach.html';
+      break;
+    case 'mishna':
+      templatePath = './templates/mishna.html';
+      break;
+    case 'parasha':
+      templatePath = './templates/parasha.html';
+      break;
+    default:
+      templatePath = '';
+  }
+  return templatePath;
+}
 /*
   run takes as its parameter a context object, which has data about which
   program we wish to render. It should be called by main, which should set this
   context object.
 */
 function run(context) {
-  // TODO: get the program name and path to template from context
   // TODO: get the program's template from its file
   // TODO: get the date on which we wish to run this on from context
   // TODO: get the data for the program at the given date from the TS api
   // TODO: render the template and return it
   const { program, programPath } = context || {};
+  const templateFilePath = getTemplateFilePathFromProgram(program);
 
-
+  getDataFromFileAsync(templateFilePath)
+  .then((template) => {
+    // TODO: render the template
+  })
+  .catch((err) => {
+    throw err;
+  });
 }
 
 function getProgramPathFromProgram(program) {
