@@ -116,6 +116,15 @@ function createArgsParser() {
       required: true,
     }
   );
+  parser.addArgument(
+    ['-d', '--date'],
+    {
+      help: 'set a date for the email',
+      action: 'store',
+      dest: 'date',
+      required: true,
+    }
+  );
   return parser;
 }
 
@@ -123,7 +132,7 @@ function cli() {
   const p = createArgsParser();
   const args = p.parseArgs();
 
-  const { program: programArg } = args;
+  const { program: programArg, date: dateArg } = args;
   const normalizedProgram = programArg.toLowerCase();
 
   const context = {
