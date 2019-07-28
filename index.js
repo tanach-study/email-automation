@@ -103,8 +103,14 @@ function cli() {
   return run(context);
 }
 
-function main() {
-  
+function main(programArg) {
+  const normalizedProgram = programArg.toLowerCase();
+
+  const context = {
+    program: normalizedProgram,
+    programPath: getProgramPathFromProgram(normalizedProgram),
+  };
+  return run(context);
 }
 
 if (!module.parent) {
