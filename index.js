@@ -103,6 +103,12 @@ function getProgramPathFromProgram(program) {
   return path;
 }
 
+function normalizeDate(date) {
+  const normalized = new Date(date);
+  normalized.setHours(0, 0, 0, 0);
+  return normalized;
+}
+
 function createArgsParser() {
   const parser = new ArgumentParser({
     version: '1.0.0',
@@ -140,6 +146,7 @@ function cli() {
   const context = {
     program: normalizedProgram,
     programPath: getProgramPathFromProgram(normalizedProgram),
+    date: normalizeDate(dateArg),
   };
   return run(context);
 }
