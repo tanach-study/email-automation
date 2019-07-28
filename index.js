@@ -3,6 +3,7 @@
 const handlebars = require('handlebars');
 const fs = require('fs');
 const { ArgumentParser } = require('argparse');
+const fetch = require('node-fetch');
 
 /*
   renderTemplateFromData is designed to take in an email template, some data
@@ -28,10 +29,9 @@ function getDataFromFileAsync(file) {
   });
 }
 
-function getDataByProgramByDateAsync(program, date) {
-  // TODO: hit the api with a request to get the data for that date
-  // api route is: https://api.tanachstudy.com/${program}/schedule/${date}
-  // return fetch...
+function getDataByProgramByDateAsync(programPath, date) {
+  const url = `https://api.tanachstudy.com/${programPath}/schedule/${date}`;
+  return fetch(url);
 }
 
 function transformAPIDataToTemplateData(apiData) {
@@ -66,12 +66,16 @@ function run(context) {
   // TODO: get the date on which we wish to run this on from context
   // TODO: get the data for the program at the given date from the TS api
   // TODO: render the template and return it
-  const { program, programPath } = context || {};
+  const { program, programPath, date } = context || {};
+  const promises = [];
+
   const templateFilePath = getTemplateFilePathFromProgram(program);
 
-  getDataFromFileAsync(templateFilePath)
-  .then((template) => {
-    // TODO: render the template
+  promises.push(getDataFromFileAsync(templateFilePath));
+  promises.push(getDataByProgramByDateAsync(program, date));
+  promises.all()
+  .then((data) => {
+    // TODO: use the data
   })
   .catch((err) => {
     throw err;
