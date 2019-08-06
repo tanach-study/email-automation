@@ -10,8 +10,8 @@ const fetch = require('node-fetch');
   to render it with, and simply returns the rendered html.
 */
 function renderTemplateFromData(source, data) {
-  var template = handlebars.compile(source);
-  var html = template(data);
+  const template = handlebars.compile(source);
+  const html = template(data);
   return html;
 }
 
@@ -22,7 +22,7 @@ function renderTemplateFromData(source, data) {
 */
 function getDataFromFileAsync(file) {
   return new Promise((resolve, reject) => {
-    fs.readFile(file, 'utf8', function(err, data) {
+    fs.readFile(file, 'utf8', (err, data) => {
       if (err) return reject(err);
       return resolve(data);
     });
@@ -35,7 +35,6 @@ function getDataByProgramByDateAsync(programPath, date) {
 }
 
 function transformAPIDataToTemplateData(apiData, context) {
-  // TODO: pull out values from the response object to pass to the template
   const { programPath } = context || {};
 
   const { segment_name: segmentName,
@@ -153,7 +152,7 @@ function createArgsParser() {
   const parser = new ArgumentParser({
     version: '1.0.0',
     addHelp: true,
-    description: 'Generate and schedule email campaigns for all Tanach Study programs'
+    description: 'Generate and schedule email campaigns for all Tanach Study programs',
   });
   parser.addArgument(
     ['-p', '--program'],
@@ -162,7 +161,7 @@ function createArgsParser() {
       action: 'store',
       dest: 'program',
       required: true,
-    }
+    },
   );
   parser.addArgument(
     ['-d', '--date'],
@@ -171,7 +170,7 @@ function createArgsParser() {
       action: 'store',
       dest: 'date',
       required: true,
-    }
+    },
   );
   return parser;
 }
@@ -210,4 +209,4 @@ if (!module.parent) {
 
 module.exports = {
   generateEmail: main,
-}
+};
