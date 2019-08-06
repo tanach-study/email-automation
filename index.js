@@ -34,8 +34,42 @@ function getDataByProgramByDateAsync(programPath, date) {
   return fetch(url);
 }
 
-function transformAPIDataToTemplateData(apiData) {
+function transformAPIDataToTemplateData(apiData, context) {
   // TODO: pull out values from the response object to pass to the template
+  const { programPath } = context || {};
+
+  const { segment_name: segmentName,
+    segment_title: segmentTitle,
+    segment_sponsor: segmentSponsor,
+    section_name: sectionName,
+    section_title: sectionTitle,
+    section_sponsor: sectionSponsor,
+    segment,
+    section } = apiData[0] || {};
+
+  const mappedParts = apiData.map((p) => {
+    const { unit, part, part_title: partTitle, audio_url: audio } = p || {};
+    const { host, path } = audio || {};
+    return {
+      unit,
+      part,
+      partTitle,
+      audioURL: `${host}${path}`,
+      pageURL: `https://tanachstudy.com/${programPath}/perek/${segment}/${section}/${unit}?part=${part}`,
+    };
+  });
+
+  const templateData = {
+    segmentName,
+    segmentTitle,
+    segmentSponsor: segmentSponsor || 'Sponsorship Available',
+    sectionName,
+    sectionTitle,
+    sectionSponsor: sectionSponsor || 'Sponsorship Available',
+    parts: mappedParts,
+  };
+
+  return templateData;
 }
 
 function getTemplateFilePathFromProgram(program) {
@@ -72,21 +106,22 @@ function run(context) {
   promises.push(getDataByProgramByDateAsync(programPath, date.toISOString()));
 
   Promise.all(promises)
-  .then((data) => {
-    const template = data[0];
-    const apiResponse = data[1];
-    apiResponse.json()
-    .then((apiData) => {
-      const templateData = transformAPIDataToTemplateData(apiData);
-      const rendered = renderTemplateFromData(template, templateData);
+    .then((data) => {
+      const template = data[0];
+      const apiResponse = data[1];
+      apiResponse.json()
+        .then((apiData) => {
+          const templateData = transformAPIDataToTemplateData(apiData, context);
+          const rendered = renderTemplateFromData(template, templateData);
+          fs.writeFileSync('test.html', rendered, 'utf-8');
+        })
+        .catch((jsonParseErr) => {
+          throw jsonParseErr;
+        });
     })
-    .catch((jsonParseErr) => {
-      throw jsonParseErr;
+    .catch((err) => {
+      throw err;
     });
-  })
-  .catch((err) => {
-    throw err;
-  });
 }
 
 function getProgramPathFromProgram(program) {
