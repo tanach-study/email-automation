@@ -1,0 +1,22 @@
+{
+  "extends": "airbnb-base",
+  "rules": {
+    "quotes": ["error", "single"],
+    "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
+    "import/extensions": ["off"],
+    "no-plusplus": ["error", {
+      "allowForLoopAfterthoughts": true
+    }],
+    "no-underscore-dangle": ["error", {
+      "allowAfterThis": true
+    }],
+    "no-multi-spaces": ["error", { "exceptions": { "VariableDeclarator": true } }],
+    "no-unused-vars": ["error", { "argsIgnorePattern": "[props]|[next]" }],
+    "max-len": ["error", { "code": 120 }],
+    "object-curly-newline": ["error", { 
+      "ObjectExpression": { "consistent": true },
+      "ObjectPattern": { "minProperties": 10 }
+    }],
+    "prefer-destructuring": ["error", {"object": true, "array": false}]
+  }
+}
