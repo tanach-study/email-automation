@@ -83,10 +83,10 @@
                                       <div class="m_-8631593222615902142galileo-ap-content-editor m_-8631593222615902142text-container">
                                         <div>
                                           <div>
-                                            <span style="font-size:28px;font-family:&quot;Open Sans&quot;,sans-serif">Seder Moed</span>
+                                            <span style="font-size:28px;font-family:&quot;Open Sans&quot;,sans-serif">{{ segmentName }}&nbsp;{{ segmentTitle }}</span>
                                           </div>
                                           <div>
-                                            <span style="font-size:24px;font-family:&quot;Open Sans&quot;,sans-serif;font-style:italic;font-weight:normal">Sponsorship Available</span>
+                                            <span style="font-size:24px;font-family:&quot;Open Sans&quot;,sans-serif;font-style:italic;font-weight:normal">{{ segmentSponsor }}</span>
                                             <span style="font-style:italic">﻿</span>
                                           </div>
                                         </div>
@@ -192,10 +192,10 @@
                                       <div>
                                         <div>
                                           <div>
-                                            <span style="color:rgb(61,61,61)">Masechet Shabbat</span>
+                                            <span style="color:rgb(61,61,61)">{{ sectionName }}&nbsp;{{ sectionTitle }}</span>
                                           </div>
                                           <div>
-                                            <span style="font-size:22px;color:rgb(61,61,61);font-weight:normal;font-style:italic">Sponsorship Available</span>
+                                            <span style="font-size:22px;color:rgb(61,61,61);font-weight:normal;font-style:italic">{{ sectionSponsor }}</span>
                                           </div>
                                         </div>
                                       </div>
@@ -245,6 +245,7 @@
                         </tr>
                       </tbody>
                     </table>
+                    {{#each parts }}
                     <table width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;table-layout:fixed;min-width:100%">
                       <tbody>
                         <tr>
@@ -258,7 +259,7 @@
                                       <div class="m_-8631593222615902142galileo-ap-content-editor m_-8631593222615902142text-container">
                                         <div>
                                           <div>
-                                            <span style="font-size:20px;font-weight:normal">Shabbat 16:6 - A Non Jew And A Minor Extinguishing A Fire</span>
+                                            <span style="font-size:20px;font-weight:normal">{{ ../sectionTitle }}&nbsp;{{ unit }}:{{ part }}&nbsp;-&nbsp;{{ partTitle }}</span>
                                           </div>
                                         </div>
                                       </div>
@@ -296,7 +297,7 @@
                                                     <td valign="top" align="center" style="font-family:Arial,Verdana,Helvetica,sans-serif;font-size:14px;color:rgb(255,255,255);text-decoration:none;padding:9px 15px 10px">
                                                       <div>
                                                         <div class="m_-8631593222615902142MainTextFullWidth">
-                                                          <a href="https://cdn.tanachstudy.com/archives/mishna/moed/shabbat/moed-shabbat-16-6-rabbi-ikey-tawil.mp3" style="text-decoration:none;font-size:18px;font-family:&quot;Open Sans&quot;,sans-serif;font-weight:normal;color:rgb(255,255,255)" target="_blank">Download Class</a>
+                                                          <a href="{{ audioURL }}" style="text-decoration:none;font-size:18px;font-family:&quot;Open Sans&quot;,sans-serif;font-weight:normal;color:rgb(255,255,255)" target="_blank">Download Class</a>
                                                         </div>
                                                       </div>
                                                     </td>
@@ -329,7 +330,7 @@
                                                     <td valign="top" align="center" style="font-family:Arial,Verdana,Helvetica,sans-serif;font-size:14px;color:rgb(255,255,255);text-decoration:none;padding:9px 15px 10px">
                                                       <div>
                                                         <div class="m_-8631593222615902142MainTextFullWidth">
-                                                          <a href="https://tanachstudy.com/mishna-study/perek/moed/shabbat/16?part=6" style="text-decoration:none;font-size:18px;font-family:&quot;Open Sans&quot;,sans-serif;font-weight:normal;color:rgb(255,255,255)" target="_blank">Go To Site</a>
+                                                          <a href="{{ pageURL }}" style="text-decoration:none;font-size:18px;font-family:&quot;Open Sans&quot;,sans-serif;font-weight:normal;color:rgb(255,255,255)" target="_blank">Go To Site</a>
                                                         </div>
                                                       </div>
                                                     </td>
@@ -349,6 +350,7 @@
                         </tr>
                       </tbody>
                     </table>
+                    {{/each}}
                     <table width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;table-layout:fixed;min-width:100%">
                       <tbody>
                         <tr>
