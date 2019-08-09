@@ -20,13 +20,17 @@ function renderTemplateFromData(source, data) {
   which, when it returns, returns the data of the file. It can be used to open
   and read an email template file.
 */
-function getDataFromFileAsync(file) {
-  return new Promise((resolve, reject) => {
+async function getDataFromFileAsync(file) {
+  const response = await new Promise((resolve, reject) => {
     fs.readFile(file, 'utf8', (err, data) => {
       if (err) return reject(err);
       return resolve(data);
     });
   });
+  if (response instanceof Error) {
+    throw response;
+  }
+  return response;
 }
 
 function getDataByProgramByDateAsync(programPath, date) {
@@ -89,38 +93,35 @@ function getTemplateFilePathFromProgram(program) {
   }
   return templatePath;
 }
+
+async function parseFetchResponseAsJSONAsync(res) {
+  let returnValue;
+  try {
+    returnValue = await res.json();
+  } catch (e) {
+    throw e;
+  }
+  return returnValue;
+}
 /*
   run takes as its parameter a context object, which has data about which
   program we wish to render. It should be called by main, which should set this
   context object.
 */
-function run(context) {
+async function run(context) {
   // TODO: render the template and return it
   const { program, programPath, date } = context || {};
-  const promises = [];
 
   const templateFilePath = getTemplateFilePathFromProgram(program);
 
-  promises.push(getDataFromFileAsync(templateFilePath));
-  promises.push(getDataByProgramByDateAsync(programPath, date.toISOString()));
+  const template = await getDataFromFileAsync(templateFilePath);
+  const apiResponse = await getDataByProgramByDateAsync(programPath, date.toISOString());
 
-  Promise.all(promises)
-    .then((data) => {
-      const template = data[0];
-      const apiResponse = data[1];
-      apiResponse.json()
-        .then((apiData) => {
-          const templateData = transformAPIDataToTemplateData(apiData, context);
-          const rendered = renderTemplateFromData(template, templateData);
-          fs.writeFileSync('test.html', rendered, 'utf-8');
-        })
-        .catch((jsonParseErr) => {
-          throw jsonParseErr;
-        });
-    })
-    .catch((err) => {
-      throw err;
-    });
+  const apiData = await parseFetchResponseAsJSONAsync(apiResponse);
+
+  const templateData = transformAPIDataToTemplateData(apiData, context);
+  const rendered = renderTemplateFromData(template, templateData);
+  fs.writeFileSync('test.html', rendered, 'utf-8');
 }
 
 function getProgramPathFromProgram(program) {
