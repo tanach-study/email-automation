@@ -33,6 +33,24 @@ async function getDataFromFileAsync(file) {
   return response;
 }
 
+/*
+  writeDataToFileAsync takes as its parameter a file path and some data, and it
+  saves the data to the file. It can be used to save rendered html to disk for
+  viewing later.
+*/
+async function writeDataToFileAsync(file, input) {
+  const response = await new Promise((resolve, reject) => {
+    fs.writeFile(file, input, 'utf8', (err, data) => {
+      if (err) return reject(err);
+      return resolve(data);
+    });
+  });
+  if (response instanceof Error) {
+    throw response;
+  }
+  return response;
+}
+
 function getDataByProgramByDateAsync(programPath, date) {
   const url = `https://api.tanachstudy.com/${programPath}/schedule/${date}`;
   return fetch(url);
@@ -103,6 +121,7 @@ async function parseFetchResponseAsJSONAsync(res) {
   }
   return returnValue;
 }
+
 /*
   run takes as its parameter a context object, which has data about which
   program we wish to render. It should be called by main, which should set this
@@ -121,7 +140,8 @@ async function run(context) {
 
   const templateData = transformAPIDataToTemplateData(apiData, context);
   const rendered = renderTemplateFromData(template, templateData);
-  fs.writeFileSync('test.html', rendered, 'utf-8');
+
+  await writeDataToFileAsync('test.html', rendered);
 }
 
 function getProgramPathFromProgram(program) {
