@@ -147,6 +147,31 @@ function generateCampaignName(context, templateData) {
   return name;
 }
 
+function generateSubject(context, templateData) {
+  return '';
+}
+
+function generateConstantContactRequest(context, templateData, renderedHTML, renderedText) {
+  const { fromName, fromEmail, replyEmail } = context;
+  const campaignName = generateCampaignName(context, templateData);
+  const subject = generateSubject(context, templateData);
+  const req = {
+    name: campaignName,
+    subject,
+    from_name: fromName,
+    from_email: fromEmail,
+    reply_to_email: replyEmail,
+    is_permission_reminder_enabled: true,
+    is_view_as_webpage_enabled: true,
+    view_as_web_page_text: 'View this email as a web page',
+    view_as_web_page_link_text: 'Click here to view as web page',
+    email_content: renderedHTML,
+    text_content: renderedText,
+    email_content_format: 'HTML',
+  };
+  return req;
+}
+
 /*
   run takes as its parameter a context object, which has data about which
   program we wish to render. It should be called by main, which should set this
