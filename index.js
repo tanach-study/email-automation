@@ -123,10 +123,8 @@ async function parseFetchResponseAsJSONAsync(res) {
   return returnValue;
 }
 
-function generateCampaignName(context, templateData) {
-  const { date } = context;
+function generateSubject(context, templateData) {
   const { sectionName, sectionTitle, parts } = templateData;
-  const formatted = moment(date, 'MM-DD-YYYY').format('MM/DD/YYYY');
 
   const startUnit = parts.reduce((a, cur) => (cur.unit < a ? cur.unit : a));
   const startPart = parts.reduce((a, cur) => (cur.part < a ? cur.part : a));
@@ -143,18 +141,20 @@ function generateCampaignName(context, templateData) {
   } else {
     textPortion = `${startUnit}:${startUnit} - ${endUnit}:${endPart}`;
   }
-  const name = `${sectionName} ${sectionTitle}: ${textPortion} ${formatted}`;
-  return name;
+  return `${sectionName} ${sectionTitle}: ${textPortion}`;
 }
 
-function generateSubject(context, templateData) {
-  return '';
+function generateCampaignName(context, subject) {
+  const { date } = context;
+  const formatted = moment(date, 'MM-DD-YYYY').format('MM/DD/YYYY');
+
+  return `${subject} ${formatted}`;
 }
 
 function generateConstantContactRequest(context, templateData, renderedHTML, renderedText) {
   const { fromName, fromEmail, replyEmail } = context;
-  const campaignName = generateCampaignName(context, templateData);
   const subject = generateSubject(context, templateData);
+  const campaignName = generateCampaignName(context, subject);
   const req = {
     name: campaignName,
     subject,
