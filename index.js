@@ -4,6 +4,7 @@ const handlebars = require('handlebars');
 const fs = require('fs');
 const { ArgumentParser } = require('argparse');
 const fetch = require('node-fetch');
+const moment = require('moment');
 
 /*
   renderTemplateFromData is designed to take in an email template, some data
@@ -122,6 +123,30 @@ async function parseFetchResponseAsJSONAsync(res) {
   return returnValue;
 }
 
+function generateCampaignName(context, templateData) {
+  const { date } = context;
+  const { sectionName, sectionTitle, parts } = templateData;
+  const formatted = moment(date, 'MM-DD-YYYY').format('MM/DD/YYYY');
+
+  const startUnit = parts.reduce((a, cur) => (cur.unit < a ? cur.unit : a));
+  const startPart = parts.reduce((a, cur) => (cur.part < a ? cur.part : a));
+  const endUnit = parts.reduce((a, cur) => (cur.unit > a ? cur.unit : a));
+  const endPart = parts.reduce((a, cur) => (cur.part > a ? cur.part : a));
+
+  let textPortion = '';
+  if (startUnit === endUnit) {
+    if (startPart === endPart) {
+      textPortion = `${startUnit}:${startUnit}`;
+    } else {
+      textPortion = `${startUnit}:${startUnit}-${endPart}`;
+    }
+  } else {
+    textPortion = `${startUnit}:${startUnit} - ${endUnit}:${endPart}`;
+  }
+  const name = `${sectionName} ${sectionTitle}: ${textPortion} ${formatted}`;
+  return name;
+}
+
 /*
   run takes as its parameter a context object, which has data about which
   program we wish to render. It should be called by main, which should set this
@@ -142,6 +167,8 @@ async function run(context) {
   const rendered = renderTemplateFromData(template, templateData);
 
   await writeDataToFileAsync('test.html', rendered);
+
+  const campaignName = generateCampaignName(context, templateData);
 }
 
 function getProgramPathFromProgram(program) {
@@ -161,6 +188,25 @@ function getProgramPathFromProgram(program) {
       path = '';
   }
   return path;
+}
+
+function getProgramNameFromProgram(program) {
+  let name = '';
+  switch (program) {
+    case 'tanach':
+    case 'nach':
+      name = 'Tanach Study';
+      break;
+    case 'mishna':
+      name = 'Mishna Study';
+      break;
+    case 'parasha':
+      name = 'Parasha Study';
+      break;
+    default:
+      name = '';
+  }
+  return name;
 }
 
 function normalizeDate(date) {
@@ -206,6 +252,7 @@ function cli() {
   const context = {
     program: normalizedProgram,
     programPath: getProgramPathFromProgram(normalizedProgram),
+    programName: getProgramNameFromProgram(normalizedProgram),
     date: normalizeDate(dateArg),
   };
   return run(context);
@@ -220,6 +267,7 @@ function main(programArg) {
   const context = {
     program: normalizedProgram,
     programPath: getProgramPathFromProgram(normalizedProgram),
+    programName: getProgramNameFromProgram(normalizedProgram),
   };
   return run(context);
 }
