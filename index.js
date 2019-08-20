@@ -192,8 +192,6 @@ async function run(context) {
   const rendered = renderTemplateFromData(template, templateData);
 
   await writeDataToFileAsync('test.html', rendered);
-
-  const campaignName = generateCampaignName(context, templateData);
 }
 
 function getProgramPathFromProgram(program) {
