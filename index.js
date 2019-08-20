@@ -215,6 +215,13 @@ function normalizeDate(date) {
   return normalized;
 }
 
+function validateListsInput(lists) {
+  if (!lists || lists.length === 0) {
+    throw new Error('Must specify a minimum of one list');
+  }
+  return lists;
+}
+
 function createArgsParser() {
   const parser = new ArgumentParser({
     version: '1.0.0',
@@ -239,6 +246,15 @@ function createArgsParser() {
       required: true,
     },
   );
+  parser.addArgument(
+    ['-l', '--list'],
+    {
+      help: 'set a constant contact list id to send to',
+      action: 'append',
+      dest: 'lists',
+      required: true,
+    },
+  );
   return parser;
 }
 
@@ -246,28 +262,33 @@ function cli() {
   const p = createArgsParser();
   const args = p.parseArgs();
 
-  const { program: programArg, date: dateArg } = args;
+  const { program: programArg, date: dateArg, lists: listsArg } = args;
   const normalizedProgram = programArg.toLowerCase();
+  const lists = validateListsInput(listsArg);
 
   const context = {
     program: normalizedProgram,
     programPath: getProgramPathFromProgram(normalizedProgram),
     programName: getProgramNameFromProgram(normalizedProgram),
     date: normalizeDate(dateArg),
+    lists,
   };
   return run(context);
 }
 
-function main(programArg) {
+function main(programArg, dateArg, listsArg) {
   if (!programArg) {
     throw new Error('must specify program argument');
   }
   const normalizedProgram = programArg.toLowerCase();
+  const lists = validateListsInput(listsArg);
 
   const context = {
     program: normalizedProgram,
     programPath: getProgramPathFromProgram(normalizedProgram),
     programName: getProgramNameFromProgram(normalizedProgram),
+    date: normalizeDate(dateArg),
+    lists,
   };
   return run(context);
 }
