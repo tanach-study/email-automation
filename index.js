@@ -6,6 +6,8 @@ const { ArgumentParser } = require('argparse');
 const fetch = require('node-fetch');
 const moment = require('moment');
 const dotenv = require('dotenv');
+const iconv = require('iconv-lite');
+const { minify } = require('html-minifier');
 
 /*
   renderTemplateFromData is designed to take in an email template, some data
@@ -14,7 +16,7 @@ const dotenv = require('dotenv');
 function renderTemplateFromData(source, data) {
   const template = handlebars.compile(source);
   const html = template(data);
-  return html;
+  return minify(html, { collapseWhitespace: true, removeEmptyElements: true });
 }
 
 /*
@@ -156,6 +158,16 @@ function generateCampaignName(context, subject) {
   return `TEST ${Date.now()} ${subject} - ${formatted}`;
 }
 
+function cleanString(input) {
+  let output = '';
+  for (let i = 0; i < input.length; i++) {
+    if (input.charCodeAt(i) <= 127) {
+      output += input.charAt(i);
+    }
+  }
+  return output;
+}
+
 function generateConstantContactRequest(context, templateData, renderedHTML, renderedText) {
   const { fromName, fromEmail, replyEmail } = context;
   const subject = generateSubject(context, templateData);
@@ -166,15 +178,29 @@ function generateConstantContactRequest(context, templateData, renderedHTML, ren
     from_name: fromName,
     from_email: fromEmail,
     reply_to_email: replyEmail || fromEmail,
-    is_permission_reminder_enabled: true,
     is_view_as_webpage_enabled: true,
     view_as_web_page_text: 'View this email as a web page',
     view_as_web_page_link_text: 'Click here to view as web page',
-    email_content: renderedHTML,
-    text_content: renderedText,
+    email_content: iconv.decode(iconv.encode(cleanString(renderedHTML), 'utf8'), 'iso-8859-1'),
+    text_content: iconv.decode(iconv.encode(cleanString(renderedText), 'utf8'), 'iso-8859-1'),
     email_content_format: 'HTML',
   };
   return req;
+}
+
+function postDataToConstantContact(reqBody) {
+  const { CC_KEY, CC_TOKEN } = process.env;
+  // const newBody = iconv.decode(iconv.encode(JSON.stringify(reqBody), 'utf8'), 'iso-8859-1');
+  console.log(JSON.stringify(reqBody))
+  const url = `https://api.constantcontact.com/v2/emailmarketing/campaigns?api_key=${CC_KEY}`;
+  return fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${CC_TOKEN}`,
+    },
+    method: 'POST',
+    body: JSON.stringify(reqBody),
+  });
 }
 
 /*
@@ -183,6 +209,7 @@ function generateConstantContactRequest(context, templateData, renderedHTML, ren
   context object.
 */
 async function run(context) {
+  dotenv.config({ silent: true });
   const { program, programPath, date } = context || {};
 
   const templateFilePaths = getTemplateFilePathsFromProgram(program);
@@ -194,7 +221,6 @@ async function run(context) {
     const apiResponse = await getDataByProgramByDateAsync(programPath, date.toISOString());
 
     const apiData = await parseFetchResponseAsJSONAsync(apiResponse);
-    console.log(apiData)
 
     const templateData = transformAPIDataToTemplateData(apiData, context);
     const htmlRendered = renderTemplateFromData(htmlTemplate, templateData);
@@ -204,7 +230,11 @@ async function run(context) {
     await writeDataToFileAsync('test.txt', textRendered);
 
     const req = generateConstantContactRequest(context, templateData, htmlRendered, textRendered);
-    console.log(req)
+
+    const ccApiResponse = await postDataToConstantContact(req);
+    // ccApiResponse.then(console.log).catch(console.error)
+    const ccApiData = await parseFetchResponseAsJSONAsync(ccApiResponse);
+    console.log(ccApiData);
   } catch (e) {
     console.error(e);
     process.exit(1);
@@ -355,7 +385,6 @@ function main(programArg, dateArg, listsArg, fromNameArg, fromEmailArg, replyToA
   if (!programArg) {
     throw new Error('must specify program argument');
   }
-  dotenv.config({ silent: true });
   const normalizedProgram = programArg.toLowerCase();
   const lists = validateListsInput(listsArg);
 
