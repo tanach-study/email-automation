@@ -282,7 +282,7 @@ function createArgsParser() {
     },
   );
   parser.addArgument(
-    ['-fn', '--fromName'],
+    ['-f', '--fromName'],
     {
       help: 'set the \'from\' field of the email',
       action: 'store',
@@ -291,7 +291,7 @@ function createArgsParser() {
     },
   );
   parser.addArgument(
-    ['-fa', '--fromAddress'],
+    ['-e', '--fromEmail'],
     {
       help: 'set the \'from email\' field of the email',
       action: 'store',
@@ -300,7 +300,7 @@ function createArgsParser() {
     },
   );
   parser.addArgument(
-    ['-rt', '--replyTo'],
+    ['-r', '--replyTo'],
     {
       help: 'set the \'reply to\' field of the email\nif unset, will default to fromAddress',
       action: 'store',
@@ -319,7 +319,7 @@ function cli() {
     date: dateArg,
     lists: listsArg,
     fromName: fromNameArg,
-    fromAddress: fromAddressArg,
+    fromEmail: fromEmailArg,
     replyTo: replyToArg } = args;
   const normalizedProgram = programArg.toLowerCase();
   const lists = validateListsInput(listsArg);
@@ -331,13 +331,13 @@ function cli() {
     date: normalizeDate(dateArg),
     lists,
     fromName: fromNameArg,
-    fromAddress: fromAddressArg,
+    fromEmail: fromEmailArg,
     replyTo: replyToArg,
   };
   return run(context);
 }
 
-function main(programArg, dateArg, listsArg, fromNameArg, fromAddressArg, replyToArg) {
+function main(programArg, dateArg, listsArg, fromNameArg, fromEmailArg, replyToArg) {
   if (!programArg) {
     throw new Error('must specify program argument');
   }
@@ -351,7 +351,7 @@ function main(programArg, dateArg, listsArg, fromNameArg, fromAddressArg, replyT
     date: normalizeDate(dateArg),
     lists,
     fromName: fromNameArg,
-    fromAddress: fromAddressArg,
+    fromEmail: fromEmailArg,
     replyTo: replyToArg,
   };
   return run(context);
