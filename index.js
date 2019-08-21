@@ -126,10 +126,10 @@ async function parseFetchResponseAsJSONAsync(res) {
 function generateSubject(context, templateData) {
   const { sectionName, sectionTitle, parts } = templateData;
 
-  const startUnit = parts.reduce((a, cur) => (cur.unit < a ? cur.unit : a));
-  const startPart = parts.reduce((a, cur) => (cur.part < a ? cur.part : a));
-  const endUnit = parts.reduce((a, cur) => (cur.unit > a ? cur.unit : a));
-  const endPart = parts.reduce((a, cur) => (cur.part > a ? cur.part : a));
+  const startUnit = parts.reduce((a, cur) => (cur.unit < a.unit ? cur.unit : a.unit));
+  const startPart = parts.reduce((a, cur) => (cur.part < a.part ? cur.part : a.part));
+  const endUnit = parts.reduce((a, cur) => (cur.unit > a.unit ? cur.unit : a.unit));
+  const endPart = parts.reduce((a, cur) => (cur.part > a.part ? cur.part : a.part));
 
   let textPortion = '';
   if (startUnit === endUnit) {
@@ -148,7 +148,7 @@ function generateCampaignName(context, subject) {
   const { date } = context;
   const formatted = moment(date, 'MM-DD-YYYY').format('MM/DD/YYYY');
 
-  return `${subject} ${formatted}`;
+  return `TEST ${Date.now()} ${subject} - ${formatted}`;
 }
 
 function generateConstantContactRequest(context, templateData, renderedHTML, renderedText) {
@@ -160,7 +160,7 @@ function generateConstantContactRequest(context, templateData, renderedHTML, ren
     subject,
     from_name: fromName,
     from_email: fromEmail,
-    reply_to_email: replyEmail,
+    reply_to_email: replyEmail || fromEmail,
     is_permission_reminder_enabled: true,
     is_view_as_webpage_enabled: true,
     view_as_web_page_text: 'View this email as a web page',
@@ -192,6 +192,9 @@ async function run(context) {
   const rendered = renderTemplateFromData(template, templateData);
 
   await writeDataToFileAsync('test.html', rendered);
+
+  const req = generateConstantContactRequest(context, templateData, rendered, rendered);
+  console.log(req)
 }
 
 function getProgramPathFromProgram(program) {
