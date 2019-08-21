@@ -94,23 +94,27 @@ function transformAPIDataToTemplateData(apiData, context) {
   return templateData;
 }
 
-function getTemplateFilePathFromProgram(program) {
-  let templatePath = '';
+function getTemplateFilePathsFromProgram(program) {
+  const templatePaths = {};
   switch (program) {
     case 'tanach':
     case 'nach':
-      templatePath = './templates/tanach.html';
+      templatePaths.html = './templates/tanach.html';
+      templatePaths.text = './templates/tanach.txt';
       break;
     case 'mishna':
-      templatePath = './templates/mishna.html';
+      templatePaths.html = './templates/mishna.html';
+      templatePaths.text = './templates/mishna.txt';
       break;
     case 'parasha':
-      templatePath = './templates/parasha.html';
+      templatePaths.html = './templates/parasha.html';
+      templatePaths.text = './templates/parasha.txt';
       break;
     default:
-      templatePath = '';
+      templatePaths.html = '';
+      templatePaths.text = '';
   }
-  return templatePath;
+  return templatePaths;
 }
 
 async function parseFetchResponseAsJSONAsync(res) {
@@ -178,22 +182,25 @@ function generateConstantContactRequest(context, templateData, renderedHTML, ren
   context object.
 */
 async function run(context) {
-  // TODO: render the template and return it
   const { program, programPath, date } = context || {};
 
-  const templateFilePath = getTemplateFilePathFromProgram(program);
+  const templateFilePaths = getTemplateFilePathsFromProgram(program);
+  const { html: htmlTemplateFilePath, text: textTemplateFilePath } = templateFilePaths;
 
-  const template = await getDataFromFileAsync(templateFilePath);
+  const htmlTemplate = await getDataFromFileAsync(htmlTemplateFilePath);
+  const textTemplate = await getDataFromFileAsync(textTemplateFilePath);
   const apiResponse = await getDataByProgramByDateAsync(programPath, date.toISOString());
 
   const apiData = await parseFetchResponseAsJSONAsync(apiResponse);
 
   const templateData = transformAPIDataToTemplateData(apiData, context);
-  const rendered = renderTemplateFromData(template, templateData);
+  const htmlRendered = renderTemplateFromData(htmlTemplate, templateData);
+  const textRendered = renderTemplateFromData(textTemplate, templateData);
 
-  await writeDataToFileAsync('test.html', rendered);
+  // await writeDataToFileAsync('test.html', htmlRendered);
+  await writeDataToFileAsync('test.txt', textRendered);
 
-  const req = generateConstantContactRequest(context, templateData, rendered, rendered);
+  const req = generateConstantContactRequest(context, templateData, htmlRendered, textRendered);
   console.log(req)
 }
 
