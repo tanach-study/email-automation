@@ -5,6 +5,7 @@ const fs = require('fs');
 const { ArgumentParser } = require('argparse');
 const fetch = require('node-fetch');
 const moment = require('moment');
+const dotenv = require('dotenv');
 
 /*
   renderTemplateFromData is designed to take in an email template, some data
@@ -354,6 +355,7 @@ function main(programArg, dateArg, listsArg, fromNameArg, fromEmailArg, replyToA
   if (!programArg) {
     throw new Error('must specify program argument');
   }
+  dotenv.config({ silent: true });
   const normalizedProgram = programArg.toLowerCase();
   const lists = validateListsInput(listsArg);
 
