@@ -187,21 +187,27 @@ async function run(context) {
   const templateFilePaths = getTemplateFilePathsFromProgram(program);
   const { html: htmlTemplateFilePath, text: textTemplateFilePath } = templateFilePaths;
 
-  const htmlTemplate = await getDataFromFileAsync(htmlTemplateFilePath);
-  const textTemplate = await getDataFromFileAsync(textTemplateFilePath);
-  const apiResponse = await getDataByProgramByDateAsync(programPath, date.toISOString());
+  try {
+    const htmlTemplate = await getDataFromFileAsync(htmlTemplateFilePath);
+    const textTemplate = await getDataFromFileAsync(textTemplateFilePath);
+    const apiResponse = await getDataByProgramByDateAsync(programPath, date.toISOString());
 
-  const apiData = await parseFetchResponseAsJSONAsync(apiResponse);
+    const apiData = await parseFetchResponseAsJSONAsync(apiResponse);
+    console.log(apiData)
 
-  const templateData = transformAPIDataToTemplateData(apiData, context);
-  const htmlRendered = renderTemplateFromData(htmlTemplate, templateData);
-  const textRendered = renderTemplateFromData(textTemplate, templateData);
+    const templateData = transformAPIDataToTemplateData(apiData, context);
+    const htmlRendered = renderTemplateFromData(htmlTemplate, templateData);
+    const textRendered = renderTemplateFromData(textTemplate, templateData);
 
-  await writeDataToFileAsync('test.html', htmlRendered);
-  await writeDataToFileAsync('test.txt', textRendered);
+    await writeDataToFileAsync('test.html', htmlRendered);
+    await writeDataToFileAsync('test.txt', textRendered);
 
-  const req = generateConstantContactRequest(context, templateData, htmlRendered, textRendered);
-  console.log(req)
+    const req = generateConstantContactRequest(context, templateData, htmlRendered, textRendered);
+    console.log(req)
+  } catch (e) {
+    console.error(e);
+    process.exit(1);
+  }
 }
 
 function getProgramPathFromProgram(program) {
