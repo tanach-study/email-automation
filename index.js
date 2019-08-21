@@ -197,7 +197,7 @@ async function run(context) {
   const htmlRendered = renderTemplateFromData(htmlTemplate, templateData);
   const textRendered = renderTemplateFromData(textTemplate, templateData);
 
-  // await writeDataToFileAsync('test.html', htmlRendered);
+  await writeDataToFileAsync('test.html', htmlRendered);
   await writeDataToFileAsync('test.txt', textRendered);
 
   const req = generateConstantContactRequest(context, templateData, htmlRendered, textRendered);
