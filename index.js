@@ -168,7 +168,7 @@ function cleanString(input) {
   return output;
 }
 
-function generateConstantContactRequest(context, templateData, renderedHTML, renderedText) {
+function generateConstantContactEmailRequest(context, templateData, renderedHTML, renderedText) {
   const { fromName, fromEmail, replyEmail } = context;
   const subject = generateSubject(context, templateData);
   const campaignName = generateCampaignName(context, subject);
@@ -188,7 +188,37 @@ function generateConstantContactRequest(context, templateData, renderedHTML, ren
   return req;
 }
 
-function postDataToConstantContact(reqBody) {
+function postDataToConstantContactEmailCreateApi(reqBody) {
+  const { CC_KEY, CC_TOKEN } = process.env;
+  const url = `https://api.constantcontact.com/v2/emailmarketing/campaigns?api_key=${CC_KEY}`;
+  return fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${CC_TOKEN}`,
+    },
+    method: 'POST',
+    body: JSON.stringify(reqBody),
+  });
+}
+
+function generateConstantContactScheduleRequest(context, campaignID) {
+  const req = {
+    name: campaignName,
+    subject,
+    from_name: fromName,
+    from_email: fromEmail,
+    reply_to_email: replyEmail || fromEmail,
+    is_view_as_webpage_enabled: true,
+    view_as_web_page_text: 'View this email as a web page',
+    view_as_web_page_link_text: 'Click here to view as web page',
+    email_content: iconv.decode(iconv.encode(cleanString(renderedHTML), 'utf8'), 'iso-8859-1'),
+    text_content: iconv.decode(iconv.encode(cleanString(renderedText), 'utf8'), 'iso-8859-1'),
+    email_content_format: 'HTML',
+  };
+  return req;
+}
+
+function postDataToConstantContactEmailScheduleApi(reqBody) {
   const { CC_KEY, CC_TOKEN } = process.env;
   const url = `https://api.constantcontact.com/v2/emailmarketing/campaigns?api_key=${CC_KEY}`;
   return fetch(url, {
@@ -212,6 +242,9 @@ function parseConstantContactEmailCreateResponse(response) {
   return response.id;
 }
 
+function finish(response) {
+  console.log(response);
+}
 /*
   run takes as its parameter a context object, which has data about which
   program we wish to render. It should be called by main, which should set this
@@ -238,12 +271,16 @@ async function run(context) {
     await writeDataToFileAsync('test.html', htmlRendered);
     await writeDataToFileAsync('test.txt', textRendered);
 
-    const req = generateConstantContactRequest(context, templateData, htmlRendered, textRendered);
+    const generateEmailRequest = generateConstantContactEmailRequest(context, templateData, htmlRendered, textRendered);
 
-    const ccApiResponse = await postDataToConstantContact(req);
-    const ccApiData = await parseFetchResponseAsJSONAsync(ccApiResponse);
-    const listID = parseConstantContactEmailCreateResponse(ccApiData);
-    console.log(listID)
+    const ccEmailApiResponse = await postDataToConstantContactEmailCreateApi(generateEmailRequest);
+    const ccEmailApiData = await parseFetchResponseAsJSONAsync(ccEmailApiResponse);
+    const campaignID = parseConstantContactEmailCreateResponse(ccEmailApiData);
+
+    const scheduleApiRequest = generateConstantContactScheduleRequest(context, campaignID);
+    const ccScheduleApiResponse = await postDataToConstantContactEmailScheduleApi(scheduleApiRequest);
+    const ccScheduleApiData = await parseFetchResponseAsJSONAsync(ccScheduleApiResponse);
+    finish(ccScheduleApiData);
   } catch (e) {
     console.error(e);
     process.exit(1);
