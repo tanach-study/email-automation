@@ -202,32 +202,29 @@ function postDataToConstantContactEmailCreateApi(reqBody) {
 }
 
 function generateConstantContactScheduleRequest(context, campaignID) {
+  const { date } = context;
+  // if date is friday
+  if (date.getDay() === 5) {
+    date.setHours(2);
+  } else {
+    date.setHours(5);
+  }
   const req = {
-    name: campaignName,
-    subject,
-    from_name: fromName,
-    from_email: fromEmail,
-    reply_to_email: replyEmail || fromEmail,
-    is_view_as_webpage_enabled: true,
-    view_as_web_page_text: 'View this email as a web page',
-    view_as_web_page_link_text: 'Click here to view as web page',
-    email_content: iconv.decode(iconv.encode(cleanString(renderedHTML), 'utf8'), 'iso-8859-1'),
-    text_content: iconv.decode(iconv.encode(cleanString(renderedText), 'utf8'), 'iso-8859-1'),
-    email_content_format: 'HTML',
+    scheduled_date: date.toISOString(),
   };
   return req;
 }
 
-function postDataToConstantContactEmailScheduleApi(reqBody) {
+function postDataToConstantContactEmailScheduleApi(request, campaignID) {
   const { CC_KEY, CC_TOKEN } = process.env;
-  const url = `https://api.constantcontact.com/v2/emailmarketing/campaigns?api_key=${CC_KEY}`;
+  const url = `https://api.constantcontact.com/v2/emailmarketing/campaigns/${campaignID}/schedules?api_key=${CC_KEY}`;
   return fetch(url, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${CC_TOKEN}`,
     },
     method: 'POST',
-    body: JSON.stringify(reqBody),
+    body: JSON.stringify(request),
   });
 }
 
@@ -278,7 +275,7 @@ async function run(context) {
     const campaignID = parseConstantContactEmailCreateResponse(ccEmailApiData);
 
     const scheduleApiRequest = generateConstantContactScheduleRequest(context, campaignID);
-    const ccScheduleApiResponse = await postDataToConstantContactEmailScheduleApi(scheduleApiRequest);
+    const ccScheduleApiResponse = await postDataToConstantContactEmailScheduleApi(scheduleApiRequest, campaignID);
     const ccScheduleApiData = await parseFetchResponseAsJSONAsync(ccScheduleApiResponse);
     finish(ccScheduleApiData);
   } catch (e) {
@@ -325,17 +322,30 @@ function getProgramNameFromProgram(program) {
   return name;
 }
 
+function getEmailListIDsFromProgram(program) {
+  const { CC_TEST_LIST } = process.env;
+  const lists = [];
+  switch (program) {
+    case 'tanach':
+    case 'nach':
+      lists.push(CC_TEST_LIST);
+      break;
+    case 'mishna':
+      lists.push(CC_TEST_LIST);
+      break;
+    case 'parasha':
+      lists.push(CC_TEST_LIST);
+      break;
+    default:
+      break;
+  }
+  return lists;
+}
+
 function normalizeDate(date) {
   const normalized = new Date(date);
   normalized.setHours(0, 0, 0, 0);
   return normalized;
-}
-
-function validateListsInput(lists) {
-  if (!lists || lists.length === 0) {
-    throw new Error('Must specify a minimum of one list');
-  }
-  return lists;
 }
 
 function createArgsParser() {
@@ -359,15 +369,6 @@ function createArgsParser() {
       help: 'set a date for the email',
       action: 'store',
       dest: 'date',
-      required: true,
-    },
-  );
-  parser.addArgument(
-    ['-l', '--list'],
-    {
-      help: 'set a constant contact list id to send to',
-      action: 'append',
-      dest: 'lists',
       required: true,
     },
   );
@@ -407,19 +408,17 @@ function cli() {
 
   const { program: programArg,
     date: dateArg,
-    lists: listsArg,
     fromName: fromNameArg,
     fromEmail: fromEmailArg,
     replyTo: replyToArg } = args;
   const normalizedProgram = programArg.toLowerCase();
-  const lists = validateListsInput(listsArg);
 
   const context = {
     program: normalizedProgram,
     programPath: getProgramPathFromProgram(normalizedProgram),
     programName: getProgramNameFromProgram(normalizedProgram),
     date: normalizeDate(dateArg),
-    lists,
+    lists: getEmailListIDsFromProgram(normalizedProgram),
     fromName: fromNameArg,
     fromEmail: fromEmailArg,
     replyTo: replyToArg,
@@ -427,19 +426,18 @@ function cli() {
   return run(context);
 }
 
-function main(programArg, dateArg, listsArg, fromNameArg, fromEmailArg, replyToArg) {
+function main(programArg, dateArg, fromNameArg, fromEmailArg, replyToArg) {
   if (!programArg) {
     throw new Error('must specify program argument');
   }
   const normalizedProgram = programArg.toLowerCase();
-  const lists = validateListsInput(listsArg);
 
   const context = {
     program: normalizedProgram,
     programPath: getProgramPathFromProgram(normalizedProgram),
     programName: getProgramNameFromProgram(normalizedProgram),
     date: normalizeDate(dateArg),
-    lists,
+    lists: getEmailListIDsFromProgram(normalizedProgram),
     fromName: fromNameArg,
     fromEmail: fromEmailArg,
     replyTo: replyToArg,
