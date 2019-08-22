@@ -13,10 +13,13 @@ const { minify } = require('html-minifier');
   renderTemplateFromData is designed to take in an email template, some data
   to render it with, and simply returns the rendered html.
 */
-function renderTemplateFromData(source, data) {
+function renderTemplateFromData(source, data, shouldMinify) {
   const template = handlebars.compile(source);
-  const html = template(data);
-  return minify(html, { collapseWhitespace: true, removeEmptyElements: true });
+  const rendered = template(data);
+  if (shouldMinify) {
+    return minify(rendered, { collapseWhitespace: true, removeEmptyElements: true });
+  }
+  return rendered;
 }
 
 /*
@@ -182,7 +185,7 @@ function generateConstantContactEmailRequest(context, templateData, renderedHTML
     view_as_web_page_text: 'View this email as a web page',
     view_as_web_page_link_text: 'Click here to view as web page',
     email_content: iconv.decode(iconv.encode(cleanString(renderedHTML), 'utf8'), 'iso-8859-1'),
-    text_content: iconv.decode(iconv.encode(cleanString(renderedText), 'utf8'), 'iso-8859-1'),
+    text_content: renderedText,
     email_content_format: 'HTML',
   };
   return req;
@@ -248,7 +251,6 @@ function finish(response) {
   context object.
 */
 async function run(context) {
-  dotenv.config({ silent: true });
   const { program, programPath, date } = context || {};
 
   const templateFilePaths = getTemplateFilePathsFromProgram(program);
@@ -262,8 +264,8 @@ async function run(context) {
     const apiData = await parseFetchResponseAsJSONAsync(apiResponse);
 
     const templateData = transformAPIDataToTemplateData(apiData, context);
-    const htmlRendered = renderTemplateFromData(htmlTemplate, templateData);
-    const textRendered = renderTemplateFromData(textTemplate, templateData);
+    const htmlRendered = renderTemplateFromData(htmlTemplate, templateData, true);
+    const textRendered = renderTemplateFromData(textTemplate, templateData, false);
 
     await writeDataToFileAsync('test.html', htmlRendered);
     await writeDataToFileAsync('test.txt', textRendered);
@@ -406,6 +408,8 @@ function cli() {
   const p = createArgsParser();
   const args = p.parseArgs();
 
+  dotenv.config({ silent: true });
+
   const { program: programArg,
     date: dateArg,
     fromName: fromNameArg,
@@ -427,6 +431,8 @@ function cli() {
 }
 
 function main(programArg, dateArg, fromNameArg, fromEmailArg, replyToArg) {
+  dotenv.config({ silent: true });
+
   if (!programArg) {
     throw new Error('must specify program argument');
   }
