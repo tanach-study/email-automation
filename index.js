@@ -190,8 +190,6 @@ function generateConstantContactRequest(context, templateData, renderedHTML, ren
 
 function postDataToConstantContact(reqBody) {
   const { CC_KEY, CC_TOKEN } = process.env;
-  // const newBody = iconv.decode(iconv.encode(JSON.stringify(reqBody), 'utf8'), 'iso-8859-1');
-  console.log(JSON.stringify(reqBody))
   const url = `https://api.constantcontact.com/v2/emailmarketing/campaigns?api_key=${CC_KEY}`;
   return fetch(url, {
     headers: {
@@ -201,6 +199,17 @@ function postDataToConstantContact(reqBody) {
     method: 'POST',
     body: JSON.stringify(reqBody),
   });
+}
+
+function parseConstantContactEmailCreateResponse(response) {
+  if (Array.isArray(response)) {
+    const obj = response[0] || {};
+    if (obj.error_key) {
+      throw new Error(`ERROR ${obj.error_key}: ${obj.error_message}`);
+    }
+  }
+
+  return response.id;
 }
 
 /*
@@ -232,9 +241,9 @@ async function run(context) {
     const req = generateConstantContactRequest(context, templateData, htmlRendered, textRendered);
 
     const ccApiResponse = await postDataToConstantContact(req);
-    // ccApiResponse.then(console.log).catch(console.error)
     const ccApiData = await parseFetchResponseAsJSONAsync(ccApiResponse);
-    console.log(ccApiData);
+    const listID = parseConstantContactEmailCreateResponse(ccApiData);
+    console.log(listID)
   } catch (e) {
     console.error(e);
     process.exit(1);
