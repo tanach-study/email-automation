@@ -172,7 +172,7 @@ function cleanString(input) {
 }
 
 function generateConstantContactEmailRequest(context, templateData, renderedHTML, renderedText) {
-  const { fromName, fromEmail, replyEmail } = context;
+  const { fromName, fromEmail, replyEmail, lists } = context;
   const subject = generateSubject(context, templateData);
   const campaignName = generateCampaignName(context, subject);
   const req = {
@@ -187,6 +187,7 @@ function generateConstantContactEmailRequest(context, templateData, renderedHTML
     email_content: iconv.decode(iconv.encode(cleanString(renderedHTML), 'utf8'), 'iso-8859-1'),
     text_content: renderedText,
     email_content_format: 'HTML',
+    sent_to_contact_lists: lists.map(l => ({ id: l })),
   };
   return req;
 }
